@@ -44,13 +44,13 @@ skew2 = st.skew(depths2)
 kurt1 = st.kurtosis(depths1)
 kurt2 = st.kurtosis(depths2)
 
-
+#create box and whisker plot for depths1
 plt.figure(1)
 plt.boxplot(depths1, vert = False, patch_artist = True)
 
 plt.figure(2)
 #np.histogram returns two arrays, one for nc (number of counts) and one for xvals of bins (xbins)
-counts, xbins =  np.histogram(depths1, bins = 15)
+counts, xbins =  np.histogram(depths1, bins = 10)
 
 #calculate the difference between bin limits
 dx = xbins[2] - xbins[1]
@@ -64,25 +64,50 @@ rdh = counts / sum(area)
 
 
 #creates rel. density histogram
-#plt.bar(x coords of bars, heights,
+#plt.bar(x coords of bars, heights, bin width)
+#xbins[:-1] + dx / 2 sets the x coordinate to be in the middle of the bin
+    #i.e. so if the bins are 10-20, 20-30, 30-40, dx = 10, start at first xbin and add 5 (dx / 2)
+    # so that xcoords will be 15, 25, 35.
 plt.bar(xbins[:-1] + dx / 2, rdh, width = dx, edgecolor = 'black')
 
 
 
+########################################################
+#create probability density function
 
+#calculate std.  ddof ==> delta degrees of freedom.  unsure
+std = np.std(depths1, ddof = 1)
 
+#find mean
+mu = np.mean(depths1)
 
+#np.linspace returns evenly spaced numbers over interval
+    #np.linspae(start, stop, number of samples to generate)
+    #this defines the domain for pdf
+x = np.linspace(mu - 3 * std, mu + 3 * std, 100)
 
-"""
-#creates boxplot for depths1 and depths2
-box1 = plt.boxplot(depths1)
-box2 = plt.boxplot(depths2)
+#breaking up normal distribution function into three components
 
-#creates histogram for depths1 and depths2
-hist1 = plt.hist(depths1, 30)
-hist2 = plt.hist(depths2, 30)
+#a is coefficient
+a = 1 / (2 * std)
 
-plt.subplot()
+#b is numerator of exponent
+b = -(x - mu) ** 2
+
+#c is denominator of exponent
+c = 2 * std
+
+f = a * np.exp(b / c)
+
+plt.plot(x, f, 'r', linewidth = 3)
+plt.xlim([mu - 3 * std, mu + 3 * std])
+plt.ylim([0, 1.1 * max(f)])
 plt.show()
-"""
+
+
+
+
+
+
+
 
