@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy import stats as st
 import matplotlib.pyplot as plt
 
@@ -43,6 +44,45 @@ skew2 = st.skew(depths2)
 kurt1 = st.kurtosis(depths1)
 kurt2 = st.kurtosis(depths2)
 
-bar1 = plt.boxplot(depths1)
+
+plt.figure(1)
+plt.boxplot(depths1, vert = False, patch_artist = True)
+
+plt.figure(2)
+#np.histogram returns two arrays, one for nc (number of counts) and one for xvals of bins (xbins)
+counts, xbins =  np.histogram(depths1, bins = 15)
+
+#calculate the difference between bin limits
+dx = xbins[2] - xbins[1]
+
+#calculate the area of each bin, sum(area) returns total area of histogram
+area = counts * dx
+
+#divides each count by the sum total area of histogram
+#outputs array of nomalized bin heights
+rdh = counts / sum(area)
+
+
+#creates rel. density histogram
+#plt.bar(x coords of bars, heights,
+plt.bar(xbins[:-1] + dx / 2, rdh, width = dx, edgecolor = 'black')
+
+
+
+
+
+
+
+"""
+#creates boxplot for depths1 and depths2
+box1 = plt.boxplot(depths1)
+box2 = plt.boxplot(depths2)
+
+#creates histogram for depths1 and depths2
+hist1 = plt.hist(depths1, 30)
+hist2 = plt.hist(depths2, 30)
+
+plt.subplot()
 plt.show()
+"""
 
