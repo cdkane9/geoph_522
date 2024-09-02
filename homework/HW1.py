@@ -111,20 +111,37 @@ def pdf_calc(data, width):
 
     plt.show()
 
-
+"""
 #produce histogram and pdf for both datasets
 pdf_calc(depths2, 10)
 pdf_calc(depths1, 12)
-
+"""
 #prints out the two stat tables w/ crude title
 print(f"GMdepth1 \n {stat_table(depths1)}")
 print()
 print(f"GMdepth2 \n {stat_table(depths2)}")
 print()
+
+
 #answering questions at bottom of HW document
 print("Question #9 \n",
       "What is the probability of a new measurement at each site being with 20cm of the average value? \n",
-      "For site 1:  ")
+      "For site 1:  The Z scores for +/- 20cm from the mean are +/- 1.4.\n",
+      "The corresponding probabilities are 91.9% and 0.807%\n",
+      "The probability that a value falls within this range is 91.09%\n",
+      "For site 2:  Using the same method above, the probability is 69.2%")
+print()
+print("Question #10 \n",
+      "What is the probability of a new measurement at each site being at least 20cm larger than the average value?\n",
+      "For site 1, the probability is 8.08%.\n",
+      "For site 2, the probability is 15.4%")
+print()
+print("Question #11\n",
+      "What is the probability of a new measurement at each site being at least 20cm smaller than the average value?\n",
+      "For site 1, the probability is 8.08%\n",
+      "For site 2, the probability is 15.4%")
+
+
 
 
 
