@@ -36,9 +36,55 @@ def stat_table(caca):
     df = pd.DataFrame({"stats": stats, "values": vals})
     return df
 
+######################################################################
+#The following code creates a histogram and boxplot for each depth transect (depths1 and depths2)
 
 
-#define a function that will output pdf and histogram.  easier this way as will only
+#establishes figure with all four plots to be made
+#Lindsay helped me with arranging all 4 plots in one figure
+#pt.subplot(nrows, ncols, location)  [[1,2],[3,4]]
+plt.subplot(2,2,1)
+
+#create box and whisker plot for depths1
+box1 = plt.boxplot(depths1, vert = False)
+
+#set plot limits and add title
+plt.xlim(50,140)
+plt.title("Transect 1")
+
+#######
+
+#dictate location of second boxplot
+#the following are the same commands as above
+plt.subplot(2,2,2)
+box2 = plt.boxplot(depths2, vert = False)
+plt.xlim(50,140)
+plt.title("Transect 2")
+
+#######
+
+plt.subplot(2,2,3)
+#create histogram for first transect with 30 bins
+hist1 = plt.hist(depths1, 30)
+
+#plot limits
+plt.xlim(50,140)
+plt.ylim(0,6)
+
+#######
+
+#same commands for above histogram
+plt.subplot(2,2,4)
+hist2 = plt.hist(depths2, 30)
+plt.xlim(50,140)
+plt.ylim(0,6)
+
+plt.show()
+
+######################################################################
+
+
+#define a function that will output pdf and rdh.  easier this way as will only
 #   write code once.  'dataset' and 'width' passed as arguments to make it easier to
 #   play around with histogram binwidth or individual datasets
 def pdf_calc(data, width):
@@ -47,11 +93,9 @@ def pdf_calc(data, width):
     mu = np.mean(data)
 
     ######################################
-    #create box and whisker plot
-    plt.figure(1)
-    plt.boxplot(data, vert = False, patch_artist = True)
 
-    plt.figure(2)
+
+
     #np.histogram returns two arrays, one for nc (number of counts) and one for xvals of bins
     counts, xbins = np.histogram(data, bins = width)
 
@@ -102,6 +146,7 @@ def pdf_calc(data, width):
     #putting together a,b,c for pdf
     f = a * np.exp(b/c)
 
+
     #plt.pot(x-vals, y-vals, color, linewidth)
     plt.plot(x, f, 'r', linewidth = 3)
 
@@ -111,11 +156,14 @@ def pdf_calc(data, width):
 
     plt.show()
 
-"""
+
 #produce histogram and pdf for both datasets
 pdf_calc(depths2, 10)
 pdf_calc(depths1, 12)
-"""
+
+
+
+
 #prints out the two stat tables w/ crude title
 print(f"GMdepth1 \n {stat_table(depths1)}")
 print()
