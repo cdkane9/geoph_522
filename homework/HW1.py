@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-import scipy
+from scipy.integrate import quad
 from scipy import stats as st
 import matplotlib.pyplot as plt
-import sympy as smp
+
 
 #paths for depth data
 depths1_path = "/Users/colemandavidkane/Documents/BSU/GEOPH_522/homework/GMdepth1.txt"
@@ -15,10 +15,10 @@ depths2 = np.loadtxt(depths2_path)
 
 
 #function for calcuating iqr by finding difference between q3 and q1 for a dataset
-def iqr_calc(caca1):
+def iqr_calc(caca):
     #np.percentile(dataset, quantile)
-    q1 = np.percentile(caca1,25)
-    q3 = np.percentile(caca1, 75)
+    q1 = np.percentile(caca,25)
+    q3 = np.percentile(caca, 75)
     iqr = q3 - q1
     return iqr
 
@@ -89,15 +89,15 @@ hist2 = plt.hist(depths2, 30)
 plt.xlim(50,140)
 plt.ylim(0,6)
 
-#plt.show()
+plt.show()
 
 ######################################################################
 
 
-#define a function that will output pdf and rdh.  easier this way as will only
-#   write code once.  'dataset' and 'width' passed as arguments to make it easier to
-#   play around with histogram binwidth or individual datasets
 def rdh(caca, width = 10):
+    # define a function that will output pdf and rdh.  easier this way as will only
+    #   write code once.  'dataset' and 'width' passed as arguments to make it easier to
+    #   play around with histogram binwidth or individual datasets
 
     #np.histogram returns two arrays, one for nc (number of counts) and one for xvals of bins
     counts, xbins = np.histogram(caca, bins = width)
@@ -116,7 +116,6 @@ def rdh(caca, width = 10):
     # xbins [:-1] + dx / 2 sets the x coordinates to be in the middle of the bin
     #   i.e. so if the bins are 10-20, 20-30, 30-40, dx = 10, start at first xbin and add 5 (dx/2)
     #   then xcoords will be 15, 25, 35
-
     rdh = plt.bar(xbins[:-1] + dx / 2, rdh, width=dx, edgecolor='black')
 
     return rdh
@@ -124,6 +123,8 @@ def rdh(caca, width = 10):
 def pdf(caca):
     #############################
     #create probability density function
+    #inputs: 1D dataset
+    #outputs: plot of probability density function
 
     # calculate mean for dataset
     mu = np.mean(caca)
@@ -152,6 +153,8 @@ def pdf(caca):
 
     return plt.plot(x, f, 'r', linewidth = 3), plt.xlim([.9 * min(x), 1.1 * max(x)]), plt.ylim([0,0.04])
 
+
+#arrange plots for rdh and pdf for both sites into one figure
 plt.subplot(1,2,1)
 rdh(depths1)
 pdf(depths1)
@@ -161,76 +164,58 @@ rdh(depths2, 12)
 pdf(depths2)
 plt.tight_layout()
 
-#plt.show()
+plt.show()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def f(caca):
-    #function for calculating cumulative density function
-    #inputs: dataset, lowerlimit, upper limit
-    #outputs:
-    #steps: bring in dataset, find pdf, integrate pdf to get cdf
-    #code for finding pdf is the same as above
+def CDF(caca, llim = 0, ulim = np.inf):
+    #function for calculating cumulative probability
+    #inputs: dataset, lower limit, upper limit
+        # default args for ease later on, also to check CDF(caca) = 1
+    #outputs: definite integral value, or cumulivitve probability between lower and upper limit
     mu = np.mean(caca)
-    std = np.std(caca, ddof=1)
-    x = smp.symbols('x', real = True)
+    std = np.std(caca, ddof = 1)
     a = 1 / (std * np.sqrt(2 * np.pi))
-    b = -(x - mu) ** 2
     c = 2 * std ** 2
-    pdf = a * np.exp(b / c)
-    return pdf
 
-print(f(depths1))
+    #creates a function, essential f(x) for pdf with domain x
+    pdf = lambda x: a * np.exp((-(x - mu) ** 2) / c)
 
-def cdf(pdf,low, high, caca):
-    #now integrate pdf to find cdf
-    cdf = scipy.integrate.quad(pdf, low, high, args = caca)
+    #calculates definite integral; quad(function, lower bound, upper bound)
+    CDF = quad(pdf, llim, ulim)
 
-    return cdf
-
+    #quad returns evaluation and uncertainty.  CDF func will return only the first value
+    return CDF[0]
 
 
 
+#evaluates CDF 20cm above and below the mean
+q9_1 = round(CDF(depths1, np.mean(depths1) - 20, np.mean(depths1) + 20), 3) * 100
 
+q9_2 = round(CDF(depths2, np.mean(depths2) - 20, np.mean(depths2) + 20), 3) * 100
 
 
 
 #answering questions at bottom of HW document
-print("Question #9 \n",
+print(
+    "Question #9 \n",
       "What is the probability of a new measurement at each site being with 20cm of the average value? \n",
-      "For site 1:  The Z scores for +/- 20cm from the mean are +/- 1.4.\n",
-      "The corresponding probabilities are 91.9% and 0.807%\n",
-      "The probability that a value falls within this range is 91.09%\n",
-      "For site 2:  Using the same method above, the probability is 69.2%")
+      f"For site 1:  {q9_1}%\n",
+      f"For site 2: {q9_2}%"
+    )
 print()
-print("Question #10 \n",
+print(
+    "Question #10 \n",
       "What is the probability of a new measurement at each site being at least 20cm larger than the average value?\n",
-      "For site 1, the probability is 8.08%.\n",
-      "For site 2, the probability is 15.4%")
+      f"For site 1: {round(CDF(depths1, np.mean(depths1) + 20), 3) * 100}%\n",
+      f"For site 2: {round(CDF(depths2, np.mean(depths2) + 20), 3) * 100}%"
+    )
 print()
 print("Question #11\n",
       "What is the probability of a new measurement at each site being at least 20cm smaller than the average value?\n",
-      "For site 1, the probability is 8.08%\n",
-      "For site 2, the probability is 15.4%")
+      f"For site 1:  {round(CDF(depths1, ulim =  np.mean(depths1) - 20), 3) * 100}%\n",
+      f"For site 2: {round(CDF(depths2, ulim =  np.mean(depths2) - 20), 3) * 100}%"
+        )
 
 
 
