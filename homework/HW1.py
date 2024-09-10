@@ -94,13 +94,13 @@ plt.show()
 ######################################################################
 
 
-def rdh(caca, width = 10):
+def rdh(caca, num_bins = 10):
     # define a function that will output pdf and rdh.  easier this way as will only
     #   write code once.  'dataset' and 'width' passed as arguments to make it easier to
     #   play around with histogram binwidth or individual datasets
 
     #np.histogram returns two arrays, one for nc (number of counts) and one for xvals of bins
-    counts, xbins = np.histogram(caca, bins = width)
+    counts, xbins = np.histogram(caca, bins = num_bins)
 
     #calculate the difference between bin limits
     dx = xbins[1] - xbins[0]
