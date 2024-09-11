@@ -49,8 +49,39 @@ def rdh(caca, num_bins = 10):
 
     return rdh
 
-rdh(elev, 45)
 
+def pdf(caca):
+    #############################
+    #create probability density function
+    #inputs: 1D dataset
+    #outputs: plot of probability density function
+
+    # calculate mean for dataset
+    mu = np.mean(caca)
+
+    #calcuate std.  ddof ==> delta degrees of freedom.  unsure
+    std = np.std(caca, ddof = 1)
+
+    #np.linspace returns evenly space numbers over interval
+    #   np.linspace(start, stop, number of samples to generate)
+    #   this will define domain for pdf
+    x = np.linspace(mu - 3 * std, mu + 3 * std, 100)
+
+    #breaking up normal distribution function into three components
+
+    #a is coefficient
+    a = 1 / (std * np.sqrt(2 * np.pi))
+
+    #b is numerator of exponent
+    b = -(x - mu) ** 2
+
+    #c is denominator of exponent
+    c = 2 * std ** 2
+
+    #putting together a,b,c for pdf
+    f = a * np.exp(b/c)
+
+    return plt.plot(x, f, 'r', linewidth = 3), plt.xlim([.9 * np.min(x), 1.1 * np.max(x)]), plt.ylim([0,0.04])
 
 mean_vals = []
 min_vals = []
@@ -58,18 +89,21 @@ max_vals = []
 std_vals = []
 
 for i in range(1000):
-    rand = random.sample(sorted(elevations), 50)
+    rand = random.sample(sorted(elevations), 10)
     mean_vals.append(np.mean(rand))
     min_vals.append(np.min(rand))
     max_vals.append(np.max(rand))
     std_vals.append(np.max(rand))
 
+
+rdh(elev, 50)
+
+
 #rdh(mean_vals, 30)
 #rdh(max_vals, 45)
 #rdh(min_vals)
-#rdh(std_vals,40)
+#rdh(std_vals,40
 plt.show()
-
 
 
 
