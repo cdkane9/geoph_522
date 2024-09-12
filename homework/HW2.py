@@ -104,22 +104,12 @@ def CDF(caca, llim = 0, ulim = np.inf):
     return CDF[0]
 
 
-#set empty lists that will fill with monty carlo simulations
-mean_vals = []
-min_vals = []
-max_vals = []
-std_vals = []
-
-#run 1000 simulations and each time take 10 samples
-#   For each simulation, take the mean, max, min, std dev and add it to lists above
-for i in range(1000):
-    rand = random.sample(sorted(elevations), 10)
-    mean_vals.append(np.mean(rand))
-    min_vals.append(np.min(rand))
-    max_vals.append(np.max(rand))
-    std_vals.append(np.std(rand))
-"""
-def monte_carlo(caca, trials, samples):
+def monte_carlo(caca, trials = 1000, samples = 10):
+    #monte carlo simulation
+    #inputs: dataset, #of trials, #of samples from each trial
+    #outpus: 4 lists, each element is specified value from each trial
+    #For each trial, 10 data points are taken.  the mean, min, max, and std are
+    #   taken for each trial, and added to the associated list
     mean_vals = []
     min_vals = []
     max_vals = []
@@ -131,7 +121,14 @@ def monte_carlo(caca, trials, samples):
         max_vals.append(np.max(rand))
         std_vals.append(np.std(rand))
     return mean_vals, min_vals, max_vals, std_vals
-"""
+
+#creates vars so don't have to call function each time
+#1000 trials, 10 data points each trial
+mean_vals1 = monte_carlo(elevations)[0]
+min_vals1 = monte_carlo(elevations)[1]
+max_vals1 = monte_carlo(elevations)[2]
+std_vals1 = monte_carlo(elevations)[3]
+
 #create 1 plot that has rdh and pdf for all elevations mean elevations (from monte carlo), max, min, std. dev
 #plt.figure(figsize = (6,6))
 plt.subplot(5,1,1)
@@ -140,29 +137,31 @@ rdh(elev, 50)
 plt.annotate("Elevations", xy = (2850, 0.01))
 
 plt.subplot(5,1,2)
-rdh(mean_vals, 30)
-pdf(mean_vals, 2725, 2925, 0, 0.045)
+rdh(mean_vals1, 30)
+pdf(mean_vals1, 2725, 2925, 0, 0.045)
 plt.annotate("Mean Elevations", xy = (2850, 0.02))
 
 plt.subplot(5,1,3)
-rdh(max_vals, 45)
-pdf(max_vals, 2725, 2925, 0, 0.03)
+rdh(max_vals1, 45)
+pdf(max_vals1, 2725, 2925, 0, 0.03)
 plt.annotate("Max Elevations", xy = (2775, 0.015))
 
 plt.subplot(5,1,4)
-rdh(min_vals, 30)
-pdf(min_vals, 2725, 2925, 0, 0.055)
+rdh(min_vals1, 30)
+pdf(min_vals1, 2725, 2925, 0, 0.055)
 plt.annotate("Min Elevations", xy = (2800, 0.02))
 
 plt.subplot(5,1,5)
-rdh(std_vals,40)
-pdf(std_vals, 0, xul = 70, yll = 0, yul = 0.055)
+rdh(std_vals1,40)
+pdf(std_vals1, 0, xul = 70, yll = 0, yul = 0.055)
 plt.annotate("Std. Deviations", xy = (10, 0.04))
 
 #plt.show()
 
 unc_min = round(CDF(elevations, 0.995 * np.min(elevations), 1.005 * np.min(elevations)), 3) * 100
 unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(elevations)), 3) * 100
+
+
 
 
 
@@ -173,12 +172,12 @@ print(
 print(
     f"Question 9: \n",
     f"The probability of measuring a value within 1% of the minimum is {unc_min}% \n",
-    f"The probability of measuring a value within 1% of the maximum is  {unc_max}%"
+    f"The probability of measuring a value within 1% of the maximum is  {unc_max} \n%"
 )
 
 print(
     f"Question 10: \n",
-    f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals) - np.std(mean_vals), 2)}m "
-    f"and {round(np.mean(mean_vals) + np.std(mean_vals), 2)}m"
+    f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals1) - np.std(mean_vals1), 2)}m "
+    f"and {round(np.mean(mean_vals1) + np.std(mean_vals1), 2)}m"
 )
 
