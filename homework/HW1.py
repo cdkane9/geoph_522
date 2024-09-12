@@ -189,7 +189,7 @@ def CDF(caca, llim = 0, ulim = np.inf):
 
 
 
-#evaluates CDF 20cm above and below the mean
+#evaluates CDF 20cm above and below the mean for question 9
 q9_1 = round(CDF(depths1, np.mean(depths1) - 20, np.mean(depths1) + 20), 3) * 100
 
 q9_2 = round(CDF(depths2, np.mean(depths2) - 20, np.mean(depths2) + 20), 3) * 100
@@ -216,7 +216,6 @@ print("Question #11\n",
       f"For site 1:  {round(CDF(depths1, ulim =  np.mean(depths1) - 20), 3) * 100}%\n",
       f"For site 2: {round(CDF(depths2, ulim =  np.mean(depths2) - 20), 3) * 100}%"
         )
-
 
 
 
