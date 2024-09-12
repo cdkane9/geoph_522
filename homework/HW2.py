@@ -16,7 +16,7 @@ elevations = elevations[np.logical_not(np.isnan(elevations))]
 #1D version of elevations
 elev = elevations.ravel()
 
-
+#calculate the max, min, mean, and standard deviation of elevations dataset
 min = np.nanmin(elev)
 max = np.max(elev)
 mu = np.mean(elev)
@@ -103,23 +103,36 @@ def CDF(caca, llim = 0, ulim = np.inf):
     #quad returns evaluation and uncertainty.  CDF func will return only the first value
     return CDF[0]
 
+
+#set empty lists that will fill with monty carlo simulations
 mean_vals = []
 min_vals = []
 max_vals = []
 std_vals = []
 
-
-
+#run 1000 simulations and each time take 10 samples
+#   For each simulation, take the mean, max, min, std dev and add it to lists above
 for i in range(1000):
     rand = random.sample(sorted(elevations), 10)
     mean_vals.append(np.mean(rand))
     min_vals.append(np.min(rand))
     max_vals.append(np.max(rand))
     std_vals.append(np.std(rand))
-
-
-
-
+"""
+def monte_carlo(caca, trials, samples):
+    mean_vals = []
+    min_vals = []
+    max_vals = []
+    std_vals = []
+    for i in range(trials):
+        rand = random.sample(sorted(caca), samples)
+        mean_vals.append(np.mean(rand))
+        min_vals.append(np.min(rand))
+        max_vals.append(np.max(rand))
+        std_vals.append(np.std(rand))
+    return mean_vals, min_vals, max_vals, std_vals
+"""
+#create 1 plot that has rdh and pdf for all elevations mean elevations (from monte carlo), max, min, std. dev
 #plt.figure(figsize = (6,6))
 plt.subplot(5,1,1)
 pdf(elev, 2725, 2925, 0, 0.02)
@@ -151,6 +164,8 @@ plt.annotate("Std. Deviations", xy = (10, 0.04))
 unc_min = round(CDF(elevations, 0.995 * np.min(elevations), 1.005 * np.min(elevations)), 3) * 100
 unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(elevations)), 3) * 100
 
+
+
 print(
     f"Question 8:\n",
     f"The probability of measuring a value less than the true mean is "
@@ -161,8 +176,9 @@ print(
     f"The probability of measuring a value within 1% of the maximum is  {unc_max}%"
 )
 
+print(
+    f"Question 10: \n",
+    f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals) - np.std(mean_vals), 2)}m "
+    f"and {round(np.mean(mean_vals) + np.std(mean_vals), 2)}m"
+)
 
-"""
-HW2 in-class notes
-
-"""
