@@ -105,11 +105,15 @@ def CDF(caca, llim = 0, ulim = np.inf):
 
 
 def monte_carlo(caca, trials = 1000, samples = 10):
-    #monte carlo simulation
-    #inputs: dataset, #of trials, #of samples from each trial
-    #outpus: 4 lists, each element is specified value from each trial
-    #For each trial, 10 data points are taken.  the mean, min, max, and std are
+    """
+
+    """
+    # monte carlo simulation
+    # inputs: dataset, #of trials, #of samples from each trial
+    # outpus: 4 lists, each element is specified value from each trial
+    # For each trial, 10 data points are taken.  the mean, min, max, and std are
     #   taken for each trial, and added to the associated list
+
     mean_vals = []
     min_vals = []
     max_vals = []
@@ -122,6 +126,9 @@ def monte_carlo(caca, trials = 1000, samples = 10):
         std_vals.append(np.std(rand))
     return mean_vals, min_vals, max_vals, std_vals
 
+
+
+"""
 #creates vars so don't have to call function each time
 #1000 trials, 10 data points each trial
 mean_vals1 = monte_carlo(elevations)[0]
@@ -156,10 +163,26 @@ rdh(std_vals1,40)
 pdf(std_vals1, 0, xul = 70, yll = 0, yul = 0.055)
 plt.annotate("Std. Deviations", xy = (10, 0.04))
 
-#plt.show()
-
+plt.show()
+"""
 unc_min = round(CDF(elevations, 0.995 * np.min(elevations), 1.005 * np.min(elevations)), 3) * 100
 unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(elevations)), 3) * 100
+
+
+#Question 10
+list_of_samples = range(10,510,10)
+result_of_data = [["samples", "mean", "min", "max", "std"]]
+
+
+for i in range(len(list_of_samples)):
+    temp_result = monte_carlo(caca = elevations, samples = list_of_samples[i])
+    row = list_of_samples[i]
+    result_of_data.append([row, temp_result[0], temp_result[1], temp_result[2], temp_result[3]])
+
+result_of_data = pd.DataFrame(result_of_data)
+print(result_of_data)
+
+
 
 
 
@@ -172,12 +195,11 @@ print(
 print(
     f"Question 9: \n",
     f"The probability of measuring a value within 1% of the minimum is {unc_min}% \n",
-    f"The probability of measuring a value within 1% of the maximum is  {unc_max} \n%"
+    f"The probability of measuring a value within 1% of the maximum is  {unc_max}% \n"
 )
 
-print(
-    f"Question 10: \n",
-    f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals1) - np.std(mean_vals1), 2)}m "
-    f"and {round(np.mean(mean_vals1) + np.std(mean_vals1), 2)}m"
-)
-
+#print(
+#    f"Question 10: \n",
+#    f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals1) - np.std(mean_vals1), 2)}m "
+#    f"and {round(np.mean(mean_vals1) + np.std(mean_vals1), 2)}m"
+#)
