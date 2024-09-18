@@ -164,29 +164,8 @@ plt.annotate("Std. Deviations", xy = (10, 0.04))
 
 plt.show()
 """
-unc_min = round(CDF(elevations, 0.995 * np.min(elevations), 1.005 * np.min(elevations)), 3) * 100
-unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(elevations)), 3) * 100
 
-
-#Question 10
-samp_size = range(10,40,10)
-result_of_data = []
-
-"""
-for i in range(len(samp_size)):
-    temp_result = monte_carlo(caca = elev, samples = samp_size[i], trials = 10)
-    row = samp_size[i]
-    print(row)
-    
-    result_of_data.append([row,
-                           [np.mean(temp_result[0]), np.min(temp_result[0]), np.max(temp_result[0]), np.std(temp_result[0])],
-                           [np.mean(temp_result[1]), np.min(temp_result[1]), np.max(temp_result[1]), np.std(temp_result[1])],
-                           [np.mean(temp_result[2]), np.min(temp_result[2]), np.max(temp_result[2]), np.std(temp_result[2])],
-                           [np.mean(temp_result[3]), np.min(temp_result[3]), np.max(temp_result[3]), np.std(temp_result[3])]
-                           ])
-"""
-
-def vary_samp_size(start, stop, step, dataset, n_trials, stat):
+def vary_samp_size(start, stop, step, dataset, n_trials):
     """
     Function for varying the sample size for Monte Carlo Simulation
     Inputs:
@@ -203,46 +182,47 @@ def vary_samp_size(start, stop, step, dataset, n_trials, stat):
     """
     samp_size = range(start, stop, step)
     result_of_data = []
-    # the original Monte Carlo function above returns 4 lists, mean, min, max, and std.  need to choose which one
-    if stat == "mean":
-        index = 0
-    elif stat == "min":
-        index = 1
-    elif stat == "max":
-        index = 2
-    elif stat == "std":
-        index = 3
-    else:
-        print("enter mean, min, max, std")
-    col_names = ["samples", f"{stat}_mean", f"{stat}_min", f"{stat}_max", f"{stat}_std"]
+    colnames = ["samples", "mean_mean", "std_mean", "mean_min", "std_min", "mean_max", "std_max", "mean_std", "std_std"]
     for i in range(len(samp_size)):
         #temp_result is a place holder for the monte carlo simulation
-        temp_result = monte_carlo(caca=dataset, samples=samp_size[i], trials=n_trials)[index]
+        temp_result = monte_carlo(caca=dataset, samples=samp_size[i], trials=n_trials)
         row = samp_size[i]
         result_of_data.append([
             row,
-            np.mean(temp_result),
-            np.min(temp_result),
-            np.max(temp_result),
-            np.std(temp_result)
+            np.mean(temp_result[0]),
+            np.std(temp_result[0]),
+            np.mean(temp_result[1]),
+            np.std(temp_result[1]),
+            np.mean(temp_result[2]),
+            np.std(temp_result[2]),
+            np.mean(temp_result[3]),
+            np.std(temp_result[3])
+
         ])
-    final = pd.DataFrame(result_of_data, columns=col_names)
+    final = pd.DataFrame(result_of_data, columns=colnames)
     return final
 
 
-varied_mean = vary_samp_size(10,410,10, elevations, 1000, "mean")
+varied_monte_carlo = vary_samp_size(10, 100, 10, elevations, 1000)
+print(varied_monte_carlo)
 
-plt.figure(figsize=(8, 6))
-plt.scatter(varied_mean['samples'], varied_mean['mean_mean'], label='Mean', color='navy', s=50, marker='.')
-plt.scatter(varied_mean['samples'], varied_mean['mean_min'], label='Min', color='red', s=50, marker='.')
-plt.scatter(varied_mean['samples'], varied_mean['mean_max'], label='Max', color='green', s=50, marker='.')
 
-# Labels and title
-plt.xlabel('# of Samples')
-plt.ylabel('Elevation (m)')
-plt.title('Mean Values')
-plt.legend()
+def scatterer(stat):
+    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"], label="Mean", color="navy", s=25, marker='.')
+    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] + varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="red", s=25, marker=".")
+    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] - varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="green", s=25, marker=".")
 
+plt.subplot(1,4,1)
+scatterer("mean")
+
+plt.subplot(1,4,2)
+scatterer("min")
+
+plt.subplot(1,4,3)
+scatterer("max")
+
+plt.subplot(1,4,4)
+scatterer("std")
 # Show plot
 
 plt.show()
@@ -252,6 +232,8 @@ plt.show()
 
 
 
+unc_min = round(CDF(elevations, 0.995 * np.min(elevations), 1.005 * np.min(elevations)), 3) * 100
+unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(elevations)), 3) * 100
 
 
 
@@ -268,8 +250,8 @@ print(
     f"The probability of measuring a value within 1% of the maximum is  {unc_max}% \n"
 )
 
-#print(
-#    f"Question 10: \n",
-#    f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals1) - np.std(mean_vals1), 2)}m "
-#    f"and {round(np.mean(mean_vals1) + np.std(mean_vals1), 2)}m"
-#)
+print(
+    f"Question 10: \n",
+    f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals1) - np.std(mean_vals1), 2)}m "
+    f"and {round(np.mean(mean_vals1) + np.std(mean_vals1), 2)}m"
+)
