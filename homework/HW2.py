@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 elevations_path = "/Users/colemandavidkane/Documents/BSU/GEOPH_522/homework/elevations.txt"
 
 elevations = np.loadtxt(elevations_path)
-print(np.shape(elevations))
+
 
 #remove nan's
 elevations = elevations[np.logical_not(np.isnan(elevations))]
@@ -134,7 +134,7 @@ mean_vals1 = monte_carlo(elevations)[0]
 min_vals1 = monte_carlo(elevations)[1]
 max_vals1 = monte_carlo(elevations)[2]
 std_vals1 = monte_carlo(elevations)[3]
-
+"""
 #create 1 plot that has rdh and pdf for all elevations mean elevations (from monte carlo), max, min, std. dev
 #plt.figure(figsize = (6,6))
 plt.subplot(5,1,1)
@@ -163,24 +163,31 @@ pdf(std_vals1, 0, xul = 70, yll = 0, yul = 0.055)
 plt.annotate("Std. Deviations", xy = (10, 0.04))
 
 plt.show()
-
+"""
 unc_min = round(CDF(elevations, 0.995 * np.min(elevations), 1.005 * np.min(elevations)), 3) * 100
 unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(elevations)), 3) * 100
 
-"""
+
 #Question 10
-list_of_samples = range(10,510,10)
-result_of_data = [["samples", "mean", "min", "max", "std"]]
+samp_size = range(10,40,10)
+result_of_data = []
 
 
-for i in range(len(list_of_samples)):
-    temp_result = monte_carlo(caca = elevations, samples = list_of_samples[i])
-    row = list_of_samples[i]
-    result_of_data.append([row, temp_result[0], temp_result[1], temp_result[2], temp_result[3]])
+for i in range(len(samp_size)):
+    temp_result = monte_carlo(caca = elev, samples = samp_size[i], trials = 10)
+    row = samp_size[i]
 
-result_of_data = pd.DataFrame(result_of_data)
-print(result_of_data)
-"""
+    result_of_data.append([row,
+                           [np.mean(temp_result[0]), np.min(temp_result[0]), np.max(temp_result[0]), np.std(temp_result[0])],
+                           [np.mean(temp_result[1]), np.min(temp_result[1]), np.max(temp_result[1]), np.std(temp_result[1])],
+                           [np.mean(temp_result[2]), np.min(temp_result[2]), np.max(temp_result[2]), np.std(temp_result[2])],
+                           [np.mean(temp_result[3]), np.min(temp_result[3]), np.max(temp_result[3]), np.std(temp_result[3])]
+                           ])
+
+
+
+
+
 
 
 
