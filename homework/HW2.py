@@ -172,17 +172,81 @@ unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(eleva
 samp_size = range(10,40,10)
 result_of_data = []
 
-
+"""
 for i in range(len(samp_size)):
     temp_result = monte_carlo(caca = elev, samples = samp_size[i], trials = 10)
     row = samp_size[i]
-
+    print(row)
+    
     result_of_data.append([row,
                            [np.mean(temp_result[0]), np.min(temp_result[0]), np.max(temp_result[0]), np.std(temp_result[0])],
                            [np.mean(temp_result[1]), np.min(temp_result[1]), np.max(temp_result[1]), np.std(temp_result[1])],
                            [np.mean(temp_result[2]), np.min(temp_result[2]), np.max(temp_result[2]), np.std(temp_result[2])],
                            [np.mean(temp_result[3]), np.min(temp_result[3]), np.max(temp_result[3]), np.std(temp_result[3])]
                            ])
+"""
+
+def vary_samp_size(start, stop, step, dataset, n_trials, stat):
+    """
+    Function for varying the sample size for Monte Carlo Simulation
+    Inputs:
+        "start": int, smallest number of samples
+        "stop": int, largest number of samples
+        "step": int, self-explanatory.  See range() below
+        "dataset": 1 or 2D array
+        "n_trials": how many times to repeat random sampling
+        "stat": statistic to measure for each trial.  Ended up being easier to just take one stat at a time, and call function 4 times
+            Now that I think about it, will need to go back and fix function so that with one call, it returns 4 data frames,
+            One for each statistic
+    Outputs:
+        2D array.  For given 'stat', let's say mean, columns will be mean_mean, mean_min, mean_max, mean_std.
+    """
+    samp_size = range(start, stop, step)
+    result_of_data = []
+    # the original Monte Carlo function above returns 4 lists, mean, min, max, and std.  need to choose which one
+    if stat == "mean":
+        index = 0
+    elif stat == "min":
+        index = 1
+    elif stat == "max":
+        index = 2
+    elif stat == "std":
+        index = 3
+    else:
+        print("enter mean, min, max, std")
+    col_names = ["samples", f"{stat}_mean", f"{stat}_min", f"{stat}_max", f"{stat}_std"]
+    for i in range(len(samp_size)):
+        #temp_result is a place holder for the monte carlo simulation
+        temp_result = monte_carlo(caca=dataset, samples=samp_size[i], trials=n_trials)[index]
+        row = samp_size[i]
+        result_of_data.append([
+            row,
+            np.mean(temp_result),
+            np.min(temp_result),
+            np.max(temp_result),
+            np.std(temp_result)
+        ])
+    final = pd.DataFrame(result_of_data, columns=col_names)
+    return final
+
+
+varied_mean = vary_samp_size(10,410,10, elevations, 1000, "mean")
+
+plt.figure(figsize=(8, 6))
+plt.scatter(varied_mean['samples'], varied_mean['mean_mean'], label='Mean', color='navy', s=50, marker='.')
+plt.scatter(varied_mean['samples'], varied_mean['mean_min'], label='Min', color='red', s=50, marker='.')
+plt.scatter(varied_mean['samples'], varied_mean['mean_max'], label='Max', color='green', s=50, marker='.')
+
+# Labels and title
+plt.xlabel('# of Samples')
+plt.ylabel('Elevation (m)')
+plt.title('Mean Values')
+plt.legend()
+
+# Show plot
+
+plt.show()
+
 
 
 
