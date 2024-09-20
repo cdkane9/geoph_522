@@ -134,7 +134,7 @@ mean_vals1 = monte_carlo(elevations)[0]
 min_vals1 = monte_carlo(elevations)[1]
 max_vals1 = monte_carlo(elevations)[2]
 std_vals1 = monte_carlo(elevations)[3]
-"""
+
 #create 1 plot that has rdh and pdf for all elevations mean elevations (from monte carlo), max, min, std. dev
 #plt.figure(figsize = (6,6))
 plt.subplot(5,1,1)
@@ -163,7 +163,7 @@ pdf(std_vals1, 0, xul = 70, yll = 0, yul = 0.055)
 plt.annotate("Std. Deviations", xy = (10, 0.04))
 
 plt.show()
-"""
+
 
 def vary_samp_size(start, stop, step, dataset, n_trials):
     """
@@ -203,28 +203,35 @@ def vary_samp_size(start, stop, step, dataset, n_trials):
     return final
 
 
-varied_monte_carlo = vary_samp_size(10, 100, 10, elevations, 1000)
+varied_monte_carlo = vary_samp_size(10, 510, 10, elevations, 1000)
 print(varied_monte_carlo)
 
 
 def scatterer(stat):
     plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"], label="Mean", color="navy", s=25, marker='.')
-    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] + varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="red", s=25, marker=".")
-    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] - varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="green", s=25, marker=".")
+    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] + varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="darkgreen", s=25, marker=".")
+    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] - varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="darkgreen", s=25, marker=".")
 
 plt.subplot(1,4,1)
 scatterer("mean")
+plt.axhline(mu)
+plt.legend()
 
 plt.subplot(1,4,2)
 scatterer("min")
+plt.axhline(min)
+
 
 plt.subplot(1,4,3)
 scatterer("max")
+plt.axhline(max)
 
 plt.subplot(1,4,4)
 scatterer("std")
+plt.axhline(std)
+plt.legend()
 # Show plot
-
+plt.tight_layout()
 plt.show()
 
 
