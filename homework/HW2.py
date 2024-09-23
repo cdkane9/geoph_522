@@ -8,11 +8,12 @@ import matplotlib.pyplot as plt
 
 elevations_path = "/Users/colemandavidkane/Documents/BSU/GEOPH_522/homework/elevations.txt"
 
-elevations = np.loadtxt(elevations_path)
+elevation = np.loadtxt(elevations_path)
 
 
 #remove nan's
-elevations = elevations[np.logical_not(np.isnan(elevations))]
+elevations = elevation[np.logical_not(np.isnan(elevation))]
+
 
 #1D version of elevations
 elev = elevations.ravel()
@@ -20,9 +21,9 @@ elev = elevations.ravel()
 
 #calculate the max, min, mean, and standard deviation of elevations dataset
 min = np.nanmin(elev)
-max = np.max(elev)
-mu = np.mean(elev)
-std = np.std(elev, ddof = 1)
+max = np.nanmax(elev)
+mu = np.nanmean(elev)
+std = np.nanstd(elev, ddof = 1)
 
 
 def rdh(caca, num_bins = 10):
@@ -41,7 +42,7 @@ def rdh(caca, num_bins = 10):
 
     #divides each count by the sum total area of histogram
     #outputs array of normalized bin heights
-    rdh = counts / sum(area)
+    rdh = counts / np.nansum(area)
 
     # plt.bar(x coords of bars, heights, bin_width)
     # xbins [:-1] + dx / 2 sets the x coordinates to be in the middle of the bin
@@ -288,3 +289,67 @@ print(
 )
 """
 
+
+def uniform_spacing(caca, distance, spacing):
+    """
+    Function for uniform sampling
+    Inputs:
+        caca - 2D array
+        distance - the distance that the data set spans in the real world (in meters)
+        spacing - the desired spacing of sampling (assumes the same in x and y direction)
+    Output:
+        uniform_samples - 2D array
+    """
+    #find the length in x and y directions for dataset
+    xlen = np.shape(caca)[0]
+    ylen = np.shape(caca)[1]
+
+
+    #calculate the resoltuion of the data set in meters per measurement
+    resolution_x = distance / xlen
+    resolution_y = distance / ylen
+
+    #determine the step, or how many values to skip to get desired spacing
+    step_x = int(spacing // resolution_x)
+    step_y = int(spacing // resolution_y)
+
+
+    uniform_samples = caca[::step_x, ::step_y]
+
+    return uniform_samples
+
+
+spacing_200 = uniform_spacing(elevation, 1000, 200)
+spacing_200 = spacing_200[np.logical_not(np.isnan(spacing_200))]
+
+spacing_30 = uniform_spacing(elevation, 1000, 30)
+spacing_30 = spacing_30[np.logical_not(np.isnan(spacing_30))]
+
+
+plt.figure(figsize=(12,7))
+plt.subplot(2,2,3)
+rdh(spacing_200, 9)
+pdf(spacing_200, 2730, 2910, 0, 0.02)
+
+plt.xlabel("Elevation (m)")
+plt.title("200m Spacing")
+
+plt.subplot(2,2,4)
+rdh(spacing_30, 20)
+pdf(spacing_30, 2730, 2910, 0, 0.02)
+
+plt.xlabel("Elevation(m)")
+plt.title("30m Spacing")
+
+
+
+
+plt.subplot(2,2,1)
+plt.boxplot(spacing_200, vert=False, notch=True)
+
+
+plt.subplot(2,2,2)
+plt.boxplot(spacing_30, vert=False, notch=True)
+
+plt.tight_layout()
+plt.show()
