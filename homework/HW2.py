@@ -126,7 +126,7 @@ def monte_carlo(caca, trials = 1000, samples = 10):
     return mean_vals, min_vals, max_vals, std_vals
 
 
-
+"""
 
 #creates vars so don't have to call function each time
 #1000 trials, 10 data points each trial
@@ -163,7 +163,7 @@ pdf(std_vals1, 0, xul = 70, yll = 0, yul = 0.055)
 plt.annotate("Std. Deviations", xy = (10, 0.04))
 
 plt.show()
-
+"""
 
 def vary_samp_size(start, stop, step, dataset, n_trials):
     """
@@ -202,38 +202,62 @@ def vary_samp_size(start, stop, step, dataset, n_trials):
     final = pd.DataFrame(result_of_data, columns=colnames)
     return final
 
-
+"""
+#stores varied sample size monte carlo to variable
 varied_monte_carlo = vary_samp_size(10, 510, 10, elevations, 1000)
-print(varied_monte_carlo)
 
 
+#function for plotting each of the scatter plots
 def scatterer(stat):
     plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"], label="Mean", color="navy", s=25, marker='.')
-    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] + varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="darkgreen", s=25, marker=".")
-    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] - varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="darkgreen", s=25, marker=".")
+    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] + varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="orangered", s=25, marker=".")
+    plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] - varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="forestgreen", s=25, marker=".")
 
+
+caption = r"Values for $\mu$, min, max, and $\sigma$ calculated from Monte Carlo simulations with varied sample size"
+plt.figure(figsize=(11,7))
+plt.figtext(0.5, 0.005, caption, wrap=True, horizontalalignment='center')
+
+#plot mean vals
 plt.subplot(1,4,1)
 scatterer("mean")
-plt.axhline(mu)
-plt.legend()
+plt.axhline(mu, color="navy")
+plt.title("Average Mean")
+plt.xlabel("Samples")
+plt.ylabel("Elevation (m)")
+plt.legend([r"$\mu$", r"$\mu + \sigma$", r"$\mu - \sigma$", r"$\mu_{true}$"], loc="upper right")
 
+#plot min vals
 plt.subplot(1,4,2)
 scatterer("min")
-plt.axhline(min)
+plt.axhline(min, color="navy")
+plt.title("Average Minimum")
+plt.xlabel("Samples")
+plt.ylim(2731,2761)
+plt.legend([r"$\mu$", r"$\mu + \sigma$", r"$\mu - \sigma$", r"$min_{true}$"], loc="upper right")
 
-
+#plot max vals
 plt.subplot(1,4,3)
 scatterer("max")
-plt.axhline(max)
+plt.axhline(max, color="navy")
+plt.xlabel("Samples")
+plt.title("Average Maximum")
+plt.ylim(2840,2924)
+plt.legend([r"$\mu$", r"$\mu + \sigma$", r"$\mu - \sigma$", r"$\max_{true}$"], loc="lower right")
 
+#plot standard deviations
 plt.subplot(1,4,4)
 scatterer("std")
-plt.axhline(std)
-plt.legend()
+plt.axhline(std, color="navy")
+plt.xlabel("Samples")
+plt.title("Average Std. Deviation")
+plt.legend([r"$\mu$", r"$\mu + \sigma$", r"$\mu - \sigma$", r"$\sigma_{true}$"], loc="lower right")
+
 # Show plot
+
 plt.tight_layout()
 plt.show()
-
+"""
 
 
 
@@ -245,7 +269,7 @@ unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(eleva
 
 
 
-
+"""
 #for questions 8, 9: what is probability that an avg value measured from MC simulation is less than true mean (of entire elevations dataset)
 print(
     f"Question 8:\n",
@@ -262,3 +286,5 @@ print(
     f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals1) - np.std(mean_vals1), 2)}m "
     f"and {round(np.mean(mean_vals1) + np.std(mean_vals1), 2)}m"
 )
+"""
+
