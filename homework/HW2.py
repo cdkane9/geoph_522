@@ -127,7 +127,7 @@ def monte_carlo(caca, trials = 1000, samples = 10):
     return mean_vals, min_vals, max_vals, std_vals
 
 
-"""
+
 
 #creates vars so don't have to call function each time
 #1000 trials, 10 data points each trial
@@ -137,34 +137,35 @@ max_vals1 = monte_carlo(elevations)[2]
 std_vals1 = monte_carlo(elevations)[3]
 
 #create 1 plot that has rdh and pdf for all elevations mean elevations (from monte carlo), max, min, std. dev
-#plt.figure(figsize = (6,6))
+plt.figure(figsize = (6,8))
 plt.subplot(5,1,1)
 pdf(elev, 2725, 2925, 0, 0.02)
 rdh(elev, 50)
-plt.annotate("Elevations", xy = (2850, 0.01))
+plt.annotate("Elevations (m)", xy = (2850, 0.01))
 
 plt.subplot(5,1,2)
 rdh(mean_vals1, 30)
 pdf(mean_vals1, 2725, 2925, 0, 0.045)
-plt.annotate("Mean Elevations", xy = (2850, 0.02))
+plt.annotate("Mean Elevations (m)", xy = (2850, 0.02))
 
 plt.subplot(5,1,3)
 rdh(max_vals1, 45)
 pdf(max_vals1, 2725, 2925, 0, 0.03)
-plt.annotate("Max Elevations", xy = (2775, 0.015))
+plt.annotate("Max Elevations (m)", xy = (2775, 0.015))
 
 plt.subplot(5,1,4)
 rdh(min_vals1, 30)
 pdf(min_vals1, 2725, 2925, 0, 0.055)
-plt.annotate("Min Elevations", xy = (2800, 0.02))
+plt.annotate("Min Elevations (m)", xy = (2800, 0.02))
 
 plt.subplot(5,1,5)
 rdh(std_vals1,40)
 pdf(std_vals1, 0, xul = 70, yll = 0, yul = 0.055)
-plt.annotate("Std. Deviations", xy = (10, 0.04))
+plt.annotate("Std. Deviations (m)", xy = (10, 0.04))
 
+plt.tight_layout()
 plt.show()
-"""
+
 
 def vary_samp_size(start, stop, step, dataset, n_trials):
     """
@@ -203,7 +204,7 @@ def vary_samp_size(start, stop, step, dataset, n_trials):
     final = pd.DataFrame(result_of_data, columns=colnames)
     return final
 
-"""
+
 #stores varied sample size monte carlo to variable
 varied_monte_carlo = vary_samp_size(10, 510, 10, elevations, 1000)
 
@@ -215,7 +216,7 @@ def scatterer(stat):
     plt.scatter(varied_monte_carlo["samples"], varied_monte_carlo[f"mean_{stat}"] - varied_monte_carlo[f"std_{stat}"], label=f"{stat}", color="forestgreen", s=25, marker=".")
 
 
-caption = r"Values for $\mu$, min, max, and $\sigma$ calculated from Monte Carlo simulations with varied sample size"
+caption = f"Values for $\mu$, min, max, and $\sigma$ calculated from Monte Carlo simulations with varied sample size"
 plt.figure(figsize=(11,7))
 plt.figtext(0.5, 0.005, caption, wrap=True, horizontalalignment='center')
 
@@ -258,7 +259,7 @@ plt.legend([r"$\mu$", r"$\mu + \sigma$", r"$\mu - \sigma$", r"$\sigma_{true}$"],
 
 plt.tight_layout()
 plt.show()
-"""
+
 
 
 
@@ -270,7 +271,7 @@ unc_max = round(CDF(elevations, 0.995 * np.max(elevations), 1.005 * np.max(eleva
 
 
 
-"""
+
 #for questions 8, 9: what is probability that an avg value measured from MC simulation is less than true mean (of entire elevations dataset)
 print(
     f"Question 8:\n",
@@ -287,7 +288,7 @@ print(
     f"68% of the the measured mean elevations fall between {round(np.mean(mean_vals1) - np.std(mean_vals1), 2)}m "
     f"and {round(np.mean(mean_vals1) + np.std(mean_vals1), 2)}m"
 )
-"""
+
 
 
 def uniform_spacing(caca, distance, spacing):
@@ -318,38 +319,45 @@ def uniform_spacing(caca, distance, spacing):
 
     return uniform_samples
 
-
+#call above function for 200m spacing, then remove nan's
 spacing_200 = uniform_spacing(elevation, 1000, 200)
 spacing_200 = spacing_200[np.logical_not(np.isnan(spacing_200))]
 
+
+#call above function for 30m spacing, then remove nan's
 spacing_30 = uniform_spacing(elevation, 1000, 30)
 spacing_30 = spacing_30[np.logical_not(np.isnan(spacing_30))]
 
+#calculate basic stats
+mu_200 = int(round(np.mean(spacing_200),0))
+sig_200 = np.std(spacing_200)
 
+mu_30 = int(round(np.mean(spacing_30),2))
+std_30 = np.std(spacing_30)
+
+
+#will plot rdh and pdf with notched boxplot above for 30m and 200m spacing
 plt.figure(figsize=(12,7))
+
 plt.subplot(2,2,3)
 rdh(spacing_200, 9)
-pdf(spacing_200, 2730, 2910, 0, 0.02)
-
+pdf(spacing_200, 2740, 2910, 0, 0.02)
 plt.xlabel("Elevation (m)")
-plt.title("200m Spacing")
 
 plt.subplot(2,2,4)
 rdh(spacing_30, 20)
 pdf(spacing_30, 2730, 2910, 0, 0.02)
-
-plt.xlabel("Elevation(m)")
-plt.title("30m Spacing")
-
-
-
+plt.xlabel("Elevation (m)")
 
 plt.subplot(2,2,1)
 plt.boxplot(spacing_200, vert=False, notch=True)
-
+plt.annotate(f"$\mu = {mu_200}$m", (np.mean(spacing_200), 1.25))
+plt.title("200m Spacing")
 
 plt.subplot(2,2,2)
 plt.boxplot(spacing_30, vert=False, notch=True)
+plt.annotate(f"$\mu = {mu_30}$m", (np.mean(spacing_30), 1.25))
+plt.title("30m Spacing")
 
 plt.tight_layout()
 plt.show()
