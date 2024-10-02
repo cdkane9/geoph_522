@@ -83,17 +83,38 @@ def getTrainTest(caca, pTrain):
     Ix = np.array(range(ns))
     train_index = np.random.choice(sorted(Ix), nsTrain, replace=False)
     test_index = np.ones(len(Ix))
-    train_set = velos[train_index]
+    train_set = caca[train_index]
     test_set = []
     count = 0
     for i in test_index:
         count += 0
-        for i in test_index:
-            if i == 1:
-                test_set.append(velos[count])
-            count += 1
+        if i == 1:
+            test_set.append(velos[count])
+        count += 1
+    return train_set, test_set
 
-    return train_set
+#print(getTrainTest(velos, 90))
 
-print(getTrainTest(velos, 90))
+#percent of data used to train
+pTrain = .90
+
+# #of samples in dataset
+ns = len(velos)
+
+#number of samples to train with
+nsTrain = int(round(pTrain * ns))
+
+#indexes of entire dataset
+Ix = np.array(range(ns))
+
+#random sample of indexes to be used in training set
+train_index = np.random.choice(sorted(Ix), nsTrain, replace=False)
+
+#the training set of dataset
+train_set = velos[train_index]
+
+#creating an array of ones, for indices that were added to train set, flip to 0
+test_index = np.ones(len(Ix))
+for i in train_index:
+    test_index[i] = 0
 
