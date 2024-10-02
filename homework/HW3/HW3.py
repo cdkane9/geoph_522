@@ -71,12 +71,29 @@ def rmse(actual, predicted):
     return rmse
 
 
-#plt.show()
-velos = list(velos)
-rad = 0
-for i in velos:
-    rad += (velos[i][1] - f2(velos[i][1])) ** 2
-rad /= len(velos)
-rm = np.sqrt(rad)
-print(rm)
+def getTrainTest(caca, pTrain):
+    """
+    Split a dataset 90/10, test on the 90% and test on the remaining 10%
+    :param caca: 2D dataset
+    :return: training dataset, test dataset
+    """
+    pTrain /= 100
+    ns = len(caca)
+    nsTrain = int(round(pTrain * ns))
+    Ix = np.array(range(ns))
+    train_index = np.random.choice(sorted(Ix), nsTrain, replace=False)
+    test_index = np.ones(len(Ix))
+    train_set = velos[train_index]
+    test_set = []
+    count = 0
+    for i in test_index:
+        count += 0
+        for i in test_index:
+            if i == 1:
+                test_set.append(velos[count])
+            count += 1
+
+    return train_set
+
+print(getTrainTest(velos, 90))
 
