@@ -4,6 +4,11 @@ import pandas as pd
 import scipy
 from matplotlib import pyplot as plt
 
+velos = np.loadtxt("icevelocity.txt")  # load in dataset
+
+z = velos[:,0]  # the depths of measurements (independent)
+v = velos[:,1]  # velocity at given depth (dependent)
+
 def rmse(dataset, model):
     """
     function for calculating rmse
@@ -13,8 +18,8 @@ def rmse(dataset, model):
     """
     sum = 0
     for i in range(len(dataset)):
-        sum += (velos[i][1] - model(velos[i][0])) ** 2
-    radicand = sum / len(velos)
+        sum += (model(dataset[i][0]) - dataset[i][1]) ** 2
+    radicand = sum / len(dataset)
     rmse = np.sqrt(radicand)
     return rmse
 
@@ -87,12 +92,40 @@ def monte_stat_table(caca, degree):
     summary_stats = pd.DataFrame(summary_stats, columns=col_names, index=row_names)
     return summary_stats
 
+def cross_val(dataset, percent, degree):
+    '''
+    partitions dataset into two subsets, trains a model on one subset and tests (calculates rmse) on other
+    :param dataset: 2D array, input in first column, output in second
+    :param percent: whole number percent to partition data
+    :param degree: highest degree of polynomial model
+    :return: root mean squared estimate
+    '''
+    split = getTrainTest(dataset, percent)
+    train = split[0]
+    test = split[1]
+    train_coef = np. polyfit(train[:, 0], train[:, 1], degree)
+    train_func = poly_lambda(train_coef)
+    root_mean = rmse(test, train_func)
+    return root_mean
+
+def monte_rmse(trials = 1000, caca = velos, degree = 3, percent = 90):
+    '''
+    monte-carlo simulation for cross validation
+    :param trials: # of trials
+    :param caca: 2D dataset
+    :param degree: highest degree of parametric polynomial model
+    :param percent: whole number percent to partition dataset
+    :return: 1 x tirals rmse for each trial
+    '''
+    deg_rmse = np.zeros((trials, 1))
+    for i in range(0, trials):
+        deg_rmse[i] = cross_val(caca, percent, degree)
+    return deg_rmse
+
+
+
 
 ####################################################################################
-velos = np.loadtxt("icevelocity.txt")  # load in dataset
-
-z = velos[:,0]  # the depths of measurements (independent)
-v = velos[:,1]  # velocity at given depth (dependent)
 
 
 # calculate coefficients of models with degrees 0-4
@@ -102,16 +135,14 @@ fit2 = np.polyfit(z,v,2)
 fit3 = np.polyfit(z,v,3)
 fit4 = np.polyfit(z,v,4)
 
-
 #create lambda functions for each model to calculate rmse
-
 f0 = poly_lambda(fit0)
 f1 = poly_lambda(fit1)
 f2 = poly_lambda(fit2)
 f3 = poly_lambda(fit3)
 f4 = poly_lambda(fit4)
 
-
+#plot ice velocities and polynomial models w/ degrees 0-4
 plt.scatter(z, v, color='black', linewidths=0.75, marker='x')  # plot velocity data
 x = np.linspace(0,180)  # define domain for plotting models and creating lambda functions
 
@@ -131,11 +162,10 @@ plt.plot(x, y4, color="purple", label=round(rmse(velos, f4), 2))
 
 plt.title('Polynomial Models for Ice Velocity', loc='center')
 plt.legend(title="RMSE", loc="lower left")
-#plt.show()
-
-row_names = ['mean', 'std']
 
 
+
+'''
 monte0 = monte_carlo_param(velos, 0, 90)
 monte1 = monte_carlo_param(velos, 1, 90)
 monte2 = monte_carlo_param(velos, 2, 90)
@@ -151,3 +181,47 @@ print()
 print(monte_stat_table(monte3, 3))
 print()
 print(monte_stat_table(monte4, 4))
+'''
+
+deg0_rmse = monte_rmse(degree=0)
+deg1_rmse = monte_rmse(degree=1)
+deg2_rmse = monte_rmse(degree=2)
+deg3_rmse = monte_rmse(degree=3)
+deg4_rmse = monte_rmse(degree=4)
+
+# Need to come back and put finishing touches on these
+plt.figure(figsize=(8,10))
+plt.subplot(5,1,1)
+plt.hist(deg0_rmse, 40)
+plt.subplot(5,1,2)
+plt.hist(deg1_rmse,40)
+plt.subplot(5,1,3)
+plt.hist(deg2_rmse, 40)
+plt.subplot(5,1,4)
+plt.hist(deg3_rmse, 40)
+
+
+mwa3 = moving_window(velos, 3)
+mwa10 = moving_window(velos, 10)
+print(mwa10)
+mwa50 = moving_window(velos, 50)
+
+plt.figure(figsize=(10, 8))
+plt.scatter(mwa3[:, 0], mwa3[:, 1], color='blue', label='Window size = 3')
+plt.scatter(mwa10[:, 0], mwa10[:, 1], color='green', label='Window size = 10')
+plt.scatter(mwa50[:, 0], mwa50[:, 1], color='red', label='Window size = 50')
+plt.legend(loc='upper right')
+plt.show()
+
+
+
+'''
+Testing normality
+KS test looks for biggest separation (probability difference) between two CDF's (from datasets D1, D2)
+    Outputs a p-value (probability of two datasets coming from different distributions) can't say much about coming from same dataset
+    i.e. test a dataset against a normal distribution
+    testing statistically significant difference
+        Create a second dataset with same mean, std. and size
+        np.random.normal(mu, std, size)
+    2-sample KS test --> scipy.stats.ks_2samp(D1, D2) returns p value    
+'''
