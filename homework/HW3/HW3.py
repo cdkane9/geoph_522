@@ -9,7 +9,6 @@ velos = np.loadtxt("icevelocity.txt")  # load in dataset
 z = velos[:,0]  # the depths of measurements (independent)
 v = velos[:,1]  # velocity at given depth (dependent)
 
-f = lambda x: x ** 2 + 5
 
 
 def rmse(dataset, model):
@@ -59,7 +58,8 @@ def getTrainTest(caca, pTrain):
     for i in train_index:
         test_index[i] = 0
     test_set = caca[test_index == 1]  # builds test sets from test_index
-    return train_set, test_set
+
+    return train_set, test_set, train_index, test_index
 
 def monte_carlo_param(caca, degree, percent, trials = 1000):
     '''
@@ -182,6 +182,7 @@ f2 = poly_lambda(fit2)
 f3 = poly_lambda(fit3)
 f4 = poly_lambda(fit4)
 
+'''
 #plot ice velocities and polynomial models w/ degrees 0-4
 plt.scatter(z, v, color='black', linewidths=0.75, marker='x')  # plot velocity data
 x = np.linspace(0,180)  # define domain for plotting models and creating lambda functions
@@ -202,7 +203,7 @@ plt.plot(x, y4, color="purple", label=round(rmse(velos, f4), 2))
 
 plt.title('Polynomial Models for Ice Velocity', loc='center')
 plt.legend(title="RMSE", loc="lower left")
-
+'''
 
 
 monte0 = monte_carlo_param(velos, 0, 90)
@@ -210,7 +211,7 @@ monte1 = monte_carlo_param(velos, 1, 90)
 monte2 = monte_carlo_param(velos, 2, 90)
 monte3 = monte_carlo_param(velos, 3, 90)
 monte4 = monte_carlo_param(velos, 4, 90)
-
+'''
 print(monte_stat_table(monte0, 0))
 print()
 print(monte_stat_table(monte1, 1))
@@ -220,14 +221,14 @@ print()
 print(monte_stat_table(monte3, 3))
 print()
 print(monte_stat_table(monte4, 4))
-
+'''
 
 deg0_rmse = monte_rmse(degree=0)
 deg1_rmse = monte_rmse(degree=1)
 deg2_rmse = monte_rmse(degree=2)
 deg3_rmse = monte_rmse(degree=3)
 deg4_rmse = monte_rmse(degree=4)
-
+'''
 # Need to come back and put finishing touches on these
 plt.figure(figsize=(8,10))
 plt.subplot(5,1,1)
@@ -238,13 +239,13 @@ plt.subplot(5,1,3)
 plt.hist(deg2_rmse, 40)
 plt.subplot(5,1,4)
 plt.hist(deg3_rmse, 40)
-
+'''
 #  moving window averages for different window sizes
 mwa3 = mov_avg(z,v, 3)
 mwa10 = mov_avg(z,v,10)
 mwa50 = mov_avg(z,v,50)
 
-
+'''
 # need to come back and add finishing touches
 plt.figure(figsize=(10, 8))
 plt.plot(z, mwa3, color='blue', label='Window size = 3')
@@ -252,7 +253,7 @@ plt.plot(z, mwa10, color='green', label='Window size = 10')
 plt.plot(z, mwa50, color='red', label='Window size = 50')
 plt.scatter(z,v, color='black', marker='o', label='Ice Velocity')
 plt.legend(loc='upper right')
-
+'''
 
 
 # weighted moving window averages for different window sizes
@@ -260,14 +261,15 @@ wmwa3 = mov_avg(z, v, 3, True)
 wmwa10 = mov_avg(z, v, 10, True)
 wmwa50 = mov_avg(z, v, 50, True)
 
+'''
 plt.figure(figsize=(10,8))
 plt.plot(z, wmwa3, color='blue')
 plt.plot(z, wmwa10, color='green')
 plt.plot(z, wmwa50, color='red')
 plt.scatter(z,v, color='black')
+'''
 
 
-mod = mov_avg(z, v, 20, True)
 
 def better_rmse(x_data, y_data, model):
     sum = 0
@@ -275,8 +277,26 @@ def better_rmse(x_data, y_data, model):
 
         sum += (model[i] - y_data[i]) ** 2
     radicand = sum / len(x_data)
-    rmse = np.sqrt(radicand)
-    return rmse
+    rmse_poo = np.sqrt(radicand)
+    return rmse_poo
+
+
+split = getTrainTest(velos, 90)
+
+train = split[0]
+test = split[1]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -289,9 +309,7 @@ KS test looks for biggest separation (probability difference) between two CDF's 
         Create a second dataset with same mean, std. and size
         np.random.normal(mu, std, size)
     2-sample KS test --> scipy.stats.ks_2samp(D1, D2) returns p value    
-'''
 
-'''
 Store moving window average at center of window
 Weighted average:
     (dist/h) <-- in this case h is half of the window size
