@@ -9,6 +9,9 @@ velos = np.loadtxt("icevelocity.txt")  # load in dataset
 z = velos[:,0]  # the depths of measurements (independent)
 v = velos[:,1]  # velocity at given depth (dependent)
 
+f = lambda x: x ** 2 + 5
+
+
 def rmse(dataset, model):
     """
     function for calculating rmse
@@ -22,6 +25,8 @@ def rmse(dataset, model):
     radicand = sum / len(dataset)
     rmse = np.sqrt(radicand)
     return rmse
+
+
 
 
 def poly_lambda(model):
@@ -123,10 +128,45 @@ def monte_rmse(trials = 1000, caca = velos, degree = 3, percent = 90):
     return deg_rmse
 
 
+def mov_avg(x, y, w_size, weight=False):
+    '''
+    calculates moving window average of a dataset
+    :param x: independent variable of a dataset
+    :param y: dependent variable of a dataset
+    :param w_size: window size
+    :param weight: default false. whether to calculate weighted moving window average
+    :return: moving average of y-values
+    '''
+    mov_mean = np.zeros(len(x))  # initiate array
+    if not weight:
+        count = 0
+        for i in x:
+            xlow = i - w_size / 2
+            xhigh = i + w_size / 2
+            Ix = np.logical_and(x > xlow, x < xhigh)
+            wind_avg = np.mean(y[Ix])
+            mov_mean[count] = wind_avg
+            count +=1
+    else:
+        count = 0
+        for i in x:
+            xlow = i - w_size / 2
+            xhigh = i + w_size / 2
+            Ix = np.logical_and(x > xlow, x < xhigh)
+            y_mod = y[Ix]
+            weights = []
+            for j in x[Ix]:
+                weight = (15 / 16) * (1 - ((j - i) / (w_size / 2)) ** 2) ** 2
+                weights.append(weight)
+            ymod_denom = sum(weights)
+            ymod_num = y_mod * weights
+            ymod = sum(ymod_num) / ymod_denom
+            mov_mean[count] = ymod
+            count += 1
+    return mov_mean
 
 
 ####################################################################################
-
 
 # calculate coefficients of models with degrees 0-4
 fit0 = np.polyfit(z,v,0)
@@ -165,7 +205,6 @@ plt.legend(title="RMSE", loc="lower left")
 
 
 
-'''
 monte0 = monte_carlo_param(velos, 0, 90)
 monte1 = monte_carlo_param(velos, 1, 90)
 monte2 = monte_carlo_param(velos, 2, 90)
@@ -181,7 +220,7 @@ print()
 print(monte_stat_table(monte3, 3))
 print()
 print(monte_stat_table(monte4, 4))
-'''
+
 
 deg0_rmse = monte_rmse(degree=0)
 deg1_rmse = monte_rmse(degree=1)
@@ -200,18 +239,44 @@ plt.hist(deg2_rmse, 40)
 plt.subplot(5,1,4)
 plt.hist(deg3_rmse, 40)
 
+#  moving window averages for different window sizes
+mwa3 = mov_avg(z,v, 3)
+mwa10 = mov_avg(z,v,10)
+mwa50 = mov_avg(z,v,50)
 
-mwa3 = moving_window(velos, 3)
-mwa10 = moving_window(velos, 10)
-print(mwa10)
-mwa50 = moving_window(velos, 50)
 
+# need to come back and add finishing touches
 plt.figure(figsize=(10, 8))
-plt.scatter(mwa3[:, 0], mwa3[:, 1], color='blue', label='Window size = 3')
-plt.scatter(mwa10[:, 0], mwa10[:, 1], color='green', label='Window size = 10')
-plt.scatter(mwa50[:, 0], mwa50[:, 1], color='red', label='Window size = 50')
+plt.plot(z, mwa3, color='blue', label='Window size = 3')
+plt.plot(z, mwa10, color='green', label='Window size = 10')
+plt.plot(z, mwa50, color='red', label='Window size = 50')
+plt.scatter(z,v, color='black', marker='o', label='Ice Velocity')
 plt.legend(loc='upper right')
-plt.show()
+
+
+
+# weighted moving window averages for different window sizes
+wmwa3 = mov_avg(z, v, 3, True)
+wmwa10 = mov_avg(z, v, 10, True)
+wmwa50 = mov_avg(z, v, 50, True)
+
+plt.figure(figsize=(10,8))
+plt.plot(z, wmwa3, color='blue')
+plt.plot(z, wmwa10, color='green')
+plt.plot(z, wmwa50, color='red')
+plt.scatter(z,v, color='black')
+
+
+mod = mov_avg(z, v, 20, True)
+
+def better_rmse(x_data, y_data, model):
+    sum = 0
+    for i in range(len(x_data)):
+
+        sum += (model[i] - y_data[i]) ** 2
+    radicand = sum / len(x_data)
+    rmse = np.sqrt(radicand)
+    return rmse
 
 
 
@@ -225,3 +290,13 @@ KS test looks for biggest separation (probability difference) between two CDF's 
         np.random.normal(mu, std, size)
     2-sample KS test --> scipy.stats.ks_2samp(D1, D2) returns p value    
 '''
+
+'''
+Store moving window average at center of window
+Weighted average:
+    (dist/h) <-- in this case h is half of the window size
+    v_mod = weights * velocities / sum(weights)
+    v_mod = w_i * v_i / sum(w)
+'''
+
+
