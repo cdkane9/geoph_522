@@ -239,13 +239,13 @@ plt.subplot(5,1,3)
 plt.hist(deg2_rmse, 40)
 plt.subplot(5,1,4)
 plt.hist(deg3_rmse, 40)
-'''
+
 #  moving window averages for different window sizes
 mwa3 = mov_avg(z,v, 3)
 mwa10 = mov_avg(z,v,10)
 mwa50 = mov_avg(z,v,50)
 
-'''
+
 # need to come back and add finishing touches
 plt.figure(figsize=(10, 8))
 plt.plot(z, mwa3, color='blue', label='Window size = 3')
@@ -269,38 +269,119 @@ plt.plot(z, wmwa50, color='red')
 plt.scatter(z,v, color='black')
 '''
 
-
-
-def better_rmse(x_data, y_data, model):
+def better_rmse(y_data, model):
     sum = 0
-    for i in range(len(x_data)):
-
+    for i in range(len(y_data)):
         sum += (model[i] - y_data[i]) ** 2
-    radicand = sum / len(x_data)
+    radicand = sum / len(y_data)
     rmse_poo = np.sqrt(radicand)
     return rmse_poo
 
+def best_rmse(y_data, model):
+    return np.sqrt(np.nanmean((y_data - model) ** 2))
 
-split = getTrainTest(velos, 90)
+def wei_mov_avg(train_x, train_y, test_x, w_size):
+    mov_mean = np.zeros((len(test_x)))
+    for i in range(len(test_x)):
+        xlow = i - w_size / 2
+        xhigh = i + w_size / 2
+        Ix = np.logical_and(train_x > xlow, train_x < xhigh)
+        y_mod = train_y[Ix]
+        x_mod = train_x[Ix]
+        weights = np.zeros(len(y_mod))
+        for j in range(len(x_mod)):
+            weights[j] = (15 / 16) * (1 - ((x_mod[j] - test_x[i]) / (w_size / 2)) ** 2) ** 2
+        mov_mean[i] = np.dot(weights, y_mod) / np.sum(weights)
 
-train = split[0]
-test = split[1]
-
-
-
-
-
-
-
-
-
-
-
-
+    return mov_mean
 
 
+
+
+all_x_train = np.zeros((82, 1000))
+all_y_train = np.zeros((82, 1000))
+all_x_test = np.zeros((9, 1000))
+all_y_test = np.zeros((9, 1000))
+
+for i in range(1000):
+    trainset = getTrainTest(velos, 90)[0]
+    testset = getTrainTest(velos, 90)[1]
+
+    all_x_train[:, i] = (trainset[:, 0])
+    all_y_train[:, i] = (trainset[:, 1])
+    all_x_test[:, i] = (testset[:, 0])
+    all_y_test[:, i] = (testset[:, 1])
+
+
+summary_window_rmse = np.zeros((180, 2))
+for w in range(0, 180):
+    window_rmse = []
+    for ix in range(1000):
+        data_x = all_x_test[:, ix]
+        data_y = all_y_test[:, ix]
+        y_model = wei_mov_avg(all_x_train[:, ix], all_y_train[:, ix], data_x, w)
+        window_rmse.append(best_rmse(data_y, y_model))
+    summary_window_rmse[w, :] = [w, np.nanmean(window_rmse)]
+
+for row in summary_window_rmse:
+    print(row)
+
+
+plt.plot(summary_window_rmse[:, 0], summary_window_rmse[:, 1], color='red')
+plt.show()
 
 '''
+
+
+u_surf = v[0]
+
+rho = 917
+theta = 10
+g = 9.81
+
+
+A0 = np.linspace(0, 1e-6, 1000) # range of A0
+exp = np.linspace(0, 4, 1000)  # range A1
+phys_error = np.zeros((len(A0), len(exp))) #5 initialize rmse
+
+for n in range(len(A0)):
+    for n2 in range(len(exp)):
+        phys_model = u_surf - (A0[n] * (rho * g * np.sin(np.radians(theta))) ** exp[n2]) * (z ** (exp[n2] + 1))
+        phys_error[n, n2] = np.sqrt(np.mean((phys_model - v) ** 2))
+
+minrmse = np.unravel_index(np.argmin(phys_error), phys_error.shape)
+
+best_A = A0[minrmse[1]]
+best_exp = exp[minrmse[0]]
+opt_rmse = np.min(phys_error)
+
+print(best_A, best_exp)
+
+plt.clf()
+plt.imshow(phys_error, extent=(A0.min(), A0.max(), exp.min(), exp.max()), aspect='auto',
+           origin='lower', cmap='viridis', vmin=0, vmax=10)
+plt.xlabel('A0')
+plt.ylabel('exp')
+plt.plot(best_A, best_exp, 'ro', linewidth=2, markersize=10)
+plt.colorbar(label='RMSE')
+plt.title('Optimal values for A0 and n in ice flow equation')
+plt.show()
+
+from scipy.optimize import minimize
+
+def RMSEval (vars):
+    A0, exp = vars
+    phys_model = u_surf - (A0 * (rho * g * np.sin(np.radians(theta))) ** exp) * (z ** (exp + 1))
+    phys_error = np.sqrt(np.mean((phys_model - v) ** 2))
+    return phys_error
+
+initial_A = np.arange(0, 0.000001, 0.000000001)
+initial_B = np.arange(0, 2, 0.002)
+result = minimize(RMSEval, [0.0])
+pbest=result.x
+print(pbest)
+
+
 Testing normality
 KS test looks for biggest separation (probability difference) between two CDF's (from datasets D1, D2)
     Outputs a p-value (probability of two datasets coming from different distributions) can't say much about coming from same dataset
@@ -308,7 +389,7 @@ KS test looks for biggest separation (probability difference) between two CDF's 
     testing statistically significant difference
         Create a second dataset with same mean, std. and size
         np.random.normal(mu, std, size)
-    2-sample KS test --> scipy.stats.ks_2samp(D1, D2) returns p value    
+    2-sample KS test --> scipy.stats.ks_2samp(D1, D2) returns p value
 
 Store moving window average at center of window
 Weighted average:
@@ -316,5 +397,3 @@ Weighted average:
     v_mod = weights * velocities / sum(weights)
     v_mod = w_i * v_i / sum(w)
 '''
-
-
